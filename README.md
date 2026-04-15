@@ -3,8 +3,20 @@
 A robust, full-stack B2B inventory management platform with role-based access control, real-time analytics, CSV-synced data persistence, and a complete supplier fulfillment workflow.
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![React](https://img.shields.io/badge/react-v18.0-blue)
+![React](https://img.shields.io/badge/react-v19-blue)
 ![Spring Boot](https://img.shields.io/badge/springboot-v3.2.4-green)
+![Deploy](https://img.shields.io/badge/deploy-live-success)
+
+---
+
+## 🌐 Live Demo
+
+| Service | URL |
+|---------|-----|
+| 🖥️ Frontend (Vercel) | [https://smart-inventory-management-system-b.vercel.app](https://smart-inventory-management-system-b.vercel.app) |
+| ⚙️ Backend API (Render) | [https://smart-inventory-management-system-b2b-1.onrender.com](https://smart-inventory-management-system-b2b-1.onrender.com) |
+
+> **Note:** The backend is hosted on Render's free tier and may take ~30 seconds to wake up on the first request if it has been idle.
 
 ---
 
@@ -12,10 +24,11 @@ A robust, full-stack B2B inventory management platform with role-based access co
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 18 + Vite, Tailwind CSS v4, Axios, React Router v6, Lucide React |
-| Backend | Spring Boot 3.2.4, Spring Security, Spring Data JPA, JWT |
-| Database | H2 In-Memory (dev) — drop-in replaceable with PostgreSQL |
+| Frontend | React 19 + Vite, Tailwind CSS v4, Axios, React Router v7, Lucide React, Recharts |
+| Backend | Spring Boot 3.2.4, Spring Security, Spring Data JPA, JWT (jjwt 0.11.5) |
+| Database | H2 In-Memory |
 | Auth | Stateless JWT tokens, Role-Based Access Control (RBAC) |
+| Deployment | Vercel (Frontend) + Render with Docker (Backend) |
 
 ---
 
@@ -27,7 +40,7 @@ A robust, full-stack B2B inventory management platform with role-based access co
 - Password strength enforcement: 8+ chars, uppercase, lowercase, number, special chars allowed
 - Three user roles: `ADMIN`, `BUSINESS`, `SUPPLIER`
 - Stale JWT token auto-wiping on page load
-- CORS configured for local dev (easily restricted for production)
+- CORS configured dynamically via environment variables
 
 ### 📊 Dynamic Analytics Dashboard
 - Real-time **Revenue** tracking (only DELIVERED orders count)
@@ -59,12 +72,23 @@ A robust, full-stack B2B inventory management platform with role-based access co
 
 ---
 
-## 🚀 Setup & Execution
+## 🚀 Getting Started
 
-### 1. Start the Backend (Java 17 required)
+### Prerequisites
+- **Java 17** (for backend)
+- **Node.js 18+** (for frontend)
+- **Maven** (or use the included `mvnw` wrapper)
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/your-username/Smart-inventory-management-system-B2B.git
+cd Smart-inventory-management-system-B2B
+```
+
+### 2. Start the Backend
 ```bash
 cd backend
-mvn clean compile spring-boot:run
+./mvnw clean compile spring-boot:run
 ```
 > API runs on `http://localhost:8080`
 
@@ -73,9 +97,7 @@ On startup, the backend **automatically**:
 - Imports all products from `products.csv`
 - Imports all suppliers from `suppliers.csv`
 
-**You never need to run seed.cjs manually again.**
-
-### 2. Start the Frontend (Node.js required)
+### 3. Start the Frontend
 ```bash
 cd frontend
 npm install
@@ -108,14 +130,62 @@ npm run dev
 
 ---
 
-## 📂 Data Files (Project Root)
+## 🌍 Deployment
 
-| File | Purpose |
-|------|---------|
-| `products.csv` | Master product catalog — auto-imported on boot, auto-updated on changes |
-| `suppliers.csv` | Supplier directory — auto-imported on boot, auto-updated on changes |
-| `logininfo.txt` | Quick reference for default login credentials |
-| `SYSTEM_WORKFLOW.md` | Detailed technical workflow documentation |
+The project is deployed using **Vercel** (frontend) and **Render** (backend with Docker).
+
+### Frontend — Vercel
+
+1. Import the GitHub repo on [vercel.com](https://vercel.com)
+2. Set **Root Directory** to `frontend`
+3. Add environment variable:
+   | Key | Value |
+   |-----|-------|
+   | `VITE_API_URL` | `https://your-backend.onrender.com/api` |
+4. Deploy — Vercel auto-detects Vite and uses `vercel.json` for SPA routing
+
+### Backend — Render (Docker)
+
+1. Create a **Web Service** on [render.com](https://render.com)
+2. Set **Root Directory** to `backend`
+3. Set **Runtime** to `Docker`
+4. Add environment variables:
+   | Key | Value |
+   |-----|-------|
+   | `PORT` | `8080` |
+   | `CORS_ALLOWED_ORIGINS` | `https://your-app.vercel.app` |
+   | `JWT_SECRET` | *(generate with `openssl rand -hex 32`)* |
+   | `H2_CONSOLE_ENABLED` | `false` |
+   | `JPA_SHOW_SQL` | `false` |
+5. Deploy — Render builds the Docker image and starts the JAR
+
+### Environment Variables Reference
+
+<details>
+<summary>📋 Full Backend Environment Variables</summary>
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `8080` | Server port (Render sets this automatically) |
+| `SPRING_DATASOURCE_URL` | `jdbc:h2:mem:inventory_db` | H2 database URL |
+| `SPRING_DATASOURCE_USERNAME` | `sa` | DB username |
+| `SPRING_DATASOURCE_PASSWORD` | `password` | DB password |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://localhost:3000` | Comma-separated allowed origins |
+| `JWT_SECRET` | *(default key)* | JWT signing secret |
+| `JWT_EXPIRATION` | `86400000` | Token expiry (24h in ms) |
+| `H2_CONSOLE_ENABLED` | `true` | Enable H2 web console |
+| `JPA_SHOW_SQL` | `true` | Log SQL queries |
+
+</details>
+
+<details>
+<summary>📋 Full Frontend Environment Variables</summary>
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VITE_API_URL` | `http://localhost:8080/api` | Backend API base URL (must include `/api`) |
+
+</details>
 
 ---
 
@@ -153,20 +223,44 @@ npm run dev
 ## 🗂️ Project Structure
 
 ```
-Smart inventory management system B2B/
-├── backend/                  # Spring Boot API
-│   └── src/main/java/com/b2b/inventory/
-│       ├── config/           # SecurityConfig, DataLoader (auto-seeder)
-│       ├── controller/       # REST controllers
-│       ├── entity/           # JPA entities
-│       ├── repository/       # Spring Data repositories
-│       └── service/          # Business logic + CSV sync
-├── frontend/                 # React + Vite app
+Smart-inventory-management-system-B2B/
+├── backend/                    # Spring Boot API
+│   ├── Dockerfile              # Multi-stage Docker build for Render
+│   ├── system.properties       # Java 17 version for Render
+│   ├── mvnw                    # Maven wrapper script
+│   ├── pom.xml                 # Maven dependencies
+│   └── src/main/
+│       ├── java/com/b2b/inventory/
+│       │   ├── config/         # Security, CORS, JWT, DataLoader
+│       │   ├── controller/     # REST controllers
+│       │   ├── dto/            # Request/Response DTOs
+│       │   ├── entity/         # JPA entities
+│       │   ├── repository/     # Spring Data repositories
+│       │   └── service/        # Business logic
+│       └── resources/
+│           ├── application.yml # Config with env var support
+│           ├── products.csv    # Seed data (classpath)
+│           └── suppliers.csv   # Seed data (classpath)
+├── frontend/                   # React + Vite app
+│   ├── vercel.json             # SPA rewrites for Vercel
+│   ├── .env.example            # Environment variable template
+│   ├── package.json            # NPM dependencies
+│   ├── vite.config.js          # Vite + Tailwind config
 │   └── src/
-│       ├── components/       # All page components
-│       ├── context/          # AuthContext
-│       └── api.js            # Axios instance
-├── products.csv              # Auto-synced product catalog
-├── suppliers.csv             # Auto-synced supplier directory
-└── SYSTEM_WORKFLOW.md        # Detailed technical documentation
+│       ├── components/         # All page components
+│       ├── context/            # AuthContext (JWT management)
+│       ├── api.js              # Axios instance with env var
+│       ├── App.jsx             # Routes & protected routes
+│       └── main.jsx            # Entry point
+├── products.csv                # Master product catalog
+├── suppliers.csv               # Supplier directory
+├── docker-compose.yml          # Local Docker setup
+├── SYSTEM_WORKFLOW.md          # Technical workflow docs
+└── README.md
 ```
+
+---
+
+## 📝 License
+
+This project is for educational and demonstration purposes.
