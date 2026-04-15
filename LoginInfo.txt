@@ -1,0 +1,3 @@
+admin@company.com
+acme@business.com
+supplier@gmail.com
